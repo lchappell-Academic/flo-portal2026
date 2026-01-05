@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLO Member Resource Portal | Infobase</title>
+    
+    <!-- CDNs for React, Tailwind, and Lucide -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-slate-900 antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        // Icon Component using Lucide CDN
+        const Icon = ({ name, className = "w-5 h-5", size = 20 }) => {
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [name]);
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        };
+
+        const FLO_MASTER_DATA = [
+            { id: "103197", name: "UMass Boston", current: 7088.46, next: 7371.99, product: "Credo: Academic Core" },
+            { id: "15557", name: "Worcester State", current: 6669.77, next: 6936.56, product: "Credo: Academic Core" },
+            { id: "239575", name: "Emmanuel College", current: 4825.06, next: 5018.06, product: "Credo: Academic Core" },
+            { id: "99227", name: "Lesley University", current: 4607.83, next: 4792.14, product: "Complete Core" },
+            { id: "106119", name: "Wentworth IT", current: 4523.42, next: 4704.35, product: "Credo: Academic Core" },
+            { id: "97330", name: "North Shore CC", current: 4507.50, next: 4687.80, product: "InfoLit - Core" },
+            { id: "114699", name: "Catholic University", current: 789.71, next: 821.30, product: "FOD: Nursing" },
+            { id: "15548", name: "Clark University", current: 653.40, next: 679.54, product: "Credo Core" }
+        ];
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('overview');
+            const [searchTerm, setSearchTerm] = useState('');
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+            const filteredData = useMemo(() => 
+                FLO_MASTER_DATA.filter(acc => 
+                    acc.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    acc.product.toLowerCase().includes(searchTerm.toLowerCase())
+                ), [searchTerm]);
+
+            const tabs = [
+                { id: 'overview', label: 'Partner Overview', icon: 'globe' },
+                { id: 'renewals', label: 'Renewal Pricing', icon: 'file-text' },
+                { id: 'training', label: 'Training & Webinars', icon: 'graduation-cap' },
+                { id: 'products', label: 'Product Suite', icon: 'monitor' }
+            ];
+
+            return (
+                <div className="min-h-screen">
+                    {/* Navigation */}
+                    <nav className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+                        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-blue-200">
+                                    <Icon name="shield-check" className="text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-lg font-black tracking-tight flex items-center leading-none">
+                                        FLO <span className="text-blue-600 ml-1">Member Portal</span>
+                                    </h1>
+                                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mt-1">Infobase Academic Partnership</p>
+                                </div>
+                            </div>
+
+                            <div className="hidden lg:flex items-center space-x-2">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id ? 'bg-blue-50 text-blue-700' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+                                    >
+                                        <Icon name={tab.icon} className={activeTab === tab.id ? 'text-blue-600' : 'text-slate-400'} size={18} />
+                                        <span>{tab.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <button className="lg:hidden p-2 text-slate-600" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                                <Icon name={isMobileMenuOpen ? "x" : "menu"} />
+                            </button>
+                        </div>
+
+                        {isMobileMenuOpen && (
+                            <div className="lg:hidden bg-white border-b border-slate-200 p-4 space-y-1 animate-fade-in">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => { setActiveTab(tab.id); setIsMobileMenuOpen(false); }}
+                                        className={`flex items-center space-x-3 w-full p-4 rounded-xl text-sm font-bold ${activeTab === tab.id ? 'bg-blue-50 text-blue-600' : 'text-slate-500'}`}
+                                    >
+                                        <Icon name={tab.icon} />
+                                        <span>{tab.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </nav>
+
+                    <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
+                        {activeTab === 'overview' && (
+                            <div className="space-y-12 animate-fade-in">
+                                <section className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-10">
+                                    <div className="flex-1 space-y-6">
+                                        <span className="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">2026 Academic Outlook</span>
+                                        <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Supporting Higher Ed Excellence at FLO</h2>
+                                        <p className="text-lg text-slate-600 font-medium leading-relaxed">
+                                            Infobase is proud to continue our partnership with the Fenway Library Organization. As we look toward the 2026 fiscal year, we remain committed to providing your member institutions with high-quality research and streaming resources.
+                                        </p>
+                                        <div className="flex flex-wrap gap-4 pt-4">
+                                            <button onClick={() => setActiveTab('renewals')} className="px-8 py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all flex items-center shadow-lg shadow-blue-200">
+                                                View Renewal Schedule <Icon name="chevron-right" className="ml-2" />
+                                            </button>
+                                            <a href="https://www.infobase.com" target="_blank" className="px-8 py-4 bg-white text-slate-700 border border-slate-200 font-bold rounded-2xl hover:bg-slate-50 transition-all flex items-center">
+                                                Infobase.com <Icon name="external-link" className="ml-2 text-slate-400" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div className="hidden md:block w-72 h-72 bg-blue-50 rounded-[3rem] flex items-center justify-center p-8 shrink-0 rotate-3">
+                                        <Icon name="graduation-cap" className="w-full h-full text-blue-200" size={160} />
+                                    </div>
+                                </section>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {[
+                                        { title: "Sustainable Pricing", icon: "trending-up", desc: "FY2026 adjustments are capped at 4.0% to ensure budgetary predictability for all members." },
+                                        { title: "Academic Alignment", icon: "book-open", desc: "Resources designed specifically for the rigorous needs of Higher Education students." },
+                                        { title: "Personalized Support", icon: "users", desc: "Dedicated team support for consortium-wide implementation and local admin tools." }
+                                    ].map((item, i) => (
+                                        <div key={i} className="bg-white p-8 rounded-3xl border border-slate-200 hover:shadow-md transition-all">
+                                            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6">
+                                                <Icon name={item.icon} className="text-blue-600" />
+                                            </div>
+                                            <h4 className="text-xl font-bold mb-2">{item.title}</h4>
+                                            <p className="text-slate-500 text-sm leading-relaxed">{item.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'renewals' && (
+                            <div className="space-y-10 animate-fade-in">
+                                <div className="flex flex-col md:flex-row justify-between items-end gap-6">
+                                    <div>
+                                        <h2 className="text-3xl font-black">2026 Renewal Schedule</h2>
+                                        <p className="text-slate-500 font-medium mt-1">Pricing overview for FLO member institutions.</p>
+                                    </div>
+                                    <div className="relative min-w-full md:min-w-[400px]">
+                                        <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                        <input 
+                                            type="text" 
+                                            placeholder="Search institution or product..." 
+                                            className="pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-2xl w-full focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all shadow-sm font-medium"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left border-collapse min-w-[700px]">
+                                            <thead>
+                                                <tr className="bg-slate-50/50 border-b border-slate-100">
+                                                    <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">Institution</th>
+                                                    <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-widest">Active Product</th>
+                                                    <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">2025 Pricing</th>
+                                                    <th className="px-10 py-6 text-[11px] font-black text-slate-400 uppercase tracking-widest text-right">2026 Projected</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50">
+                                                {filteredData.map((acc) => (
+                                                    <tr key={acc.id} className="hover:bg-blue-50/20 transition-colors group">
+                                                        <td className="px-10 py-6">
+                                                            <p className="font-bold text-slate-900">{acc.name}</p>
+                                                            <p className="text-[10px] text-slate-400 font-bold">ID: {acc.id}</p>
+                                                        </td>
+                                                        <td className="px-10 py-6">
+                                                            <span className="text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-lg">{acc.product}</span>
+                                                        </td>
+                                                        <td className="px-10 py-6 text-right text-slate-500 text-sm font-medium">
+                                                            ${acc.current.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="px-10 py-6 text-right font-black text-blue-600 text-lg">
+                                                            ${acc.next.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {filteredData.length === 0 && (
+                                        <div className="p-20 text-center">
+                                            <Icon name="search" className="mx-auto text-slate-200 mb-4" size={48} />
+                                            <p className="text-slate-500 font-bold">No matching institutions found.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'training' && (
+                            <div className="space-y-12 animate-fade-in">
+                                <div>
+                                    <h2 className="text-3xl font-black">Professional Development</h2>
+                                    <p className="text-slate-500 font-medium mt-1">Curated webinars for FLO librarians and faculty.</p>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-6">
+                                        <h3 className="text-xl font-bold flex items-center">
+                                            <Icon name="calendar" className="mr-3 text-blue-600" />
+                                            Live Webinar Schedule
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {[
+                                                { title: "Advanced Search in Credo Core", date: "Jan 14, 2026", time: "2:00 PM EST", type: "Webinar" },
+                                                { title: "Embedding InfoLit Modules in Moodle", date: "Jan 21, 2026", time: "11:00 AM EST", type: "Training" },
+                                                { title: "Streaming Films for Online Courses", date: "Feb 04, 2026", time: "3:30 PM EST", type: "Faculty Demo" }
+                                            ].map((event, i) => (
+                                                <div key={i} className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-all">
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">{event.type}</p>
+                                                        <h5 className="font-bold text-slate-900">{event.title}</h5>
+                                                        <p className="text-xs text-slate-500 mt-1 font-medium">{event.date} • {event.time}</p>
+                                                    </div>
+                                                    <button className="px-5 py-2.5 bg-white border border-slate-200 text-xs font-black rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm">
+                                                        Register
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-slate-900 text-white p-8 md:p-10 rounded-[2.5rem] shadow-xl flex flex-col justify-between overflow-hidden relative">
+                                        <div className="absolute top-0 right-0 p-4 opacity-5">
+                                            <Icon name="play-circle" size={200} />
+                                        </div>
+                                        <div className="relative z-10">
+                                            <h3 className="text-2xl font-black mb-4">On-Demand Library</h3>
+                                            <p className="text-slate-400 font-medium mb-8 leading-relaxed">
+                                                Access our archive of recordings specifically curated for FLO member needs.
+                                            </p>
+                                            <div className="space-y-4">
+                                                <button className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center hover:bg-white/10 transition-all text-left">
+                                                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center mr-4 shrink-0">
+                                                        <Icon name="play-circle" className="text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold">Credo Reference Training 101</p>
+                                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Duration: 18 min</p>
+                                                    </div>
+                                                </button>
+                                                <button className="w-full p-4 bg-white/5 border border-white/10 rounded-2xl flex items-center hover:bg-white/10 transition-all text-left">
+                                                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center mr-4 shrink-0">
+                                                        <Icon name="play-circle" className="text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold">InfoLit Assessment Data Workshop</p>
+                                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Duration: 42 min</p>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button className="relative z-10 w-full mt-10 py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-blue-900/40">
+                                            Browse All Recordings <Icon name="arrow-up-right" size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'products' && (
+                            <div className="animate-fade-in grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                <div className="md:col-span-2 lg:col-span-3 mb-2">
+                                    <h2 className="text-3xl font-black">Infobase Academic Suite</h2>
+                                    <p className="text-slate-500 font-medium mt-1">Resources included in your FLO consortium membership.</p>
+                                </div>
+                                {[
+                                    { title: "Films On Demand", icon: "video", color: "text-rose-600", bg: "bg-rose-50", desc: "Streaming videos with academic-only rights and segments for classroom use." },
+                                    { title: "Credo Academic Core", icon: "book-open", color: "text-blue-600", bg: "bg-blue-50", desc: "Foundational search for high-quality background information and reference." },
+                                    { title: "Information Literacy", icon: "check-circle-2", color: "text-purple-600", bg: "bg-purple-50", desc: "Instructional modules designed to build essential research skills in the LMS." }
+                                ].map((p, i) => (
+                                    <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl transition-all flex flex-col h-full group">
+                                        <div className={`w-14 h-14 ${p.bg} ${p.color} rounded-2xl flex items-center justify-center mb-8 shrink-0 group-hover:scale-110 transition-transform`}>
+                                            <Icon name={p.icon} size={28} />
+                                        </div>
+                                        <h4 className="text-2xl font-black mb-4">{p.title}</h4>
+                                        <p className="text-slate-500 text-sm leading-relaxed mb-8 flex-grow font-medium">{p.desc}</p>
+                                        <button className="flex items-center text-xs font-black text-blue-600 uppercase tracking-widest hover:translate-x-1 transition-transform">
+                                            Access Admin Portal <Icon name="chevron-right" className="ml-1" size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Support Section */}
+                        <div className="mt-20 p-8 md:p-12 bg-white rounded-[2.5rem] border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-10">
+                            <div className="text-center md:text-left max-w-xl">
+                                <h3 className="text-2xl font-black mb-3">Academic Support Team</h3>
+                                <p className="text-slate-500 font-medium leading-relaxed">
+                                    Whether you need custom training sessions for your faculty or help with authentication, your dedicated Infobase team is here to help.
+                                </p>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                                <a href="mailto:collegeonline@infobase.com" className="flex items-center justify-center gap-3 px-8 py-5 bg-white border border-slate-200 text-slate-800 font-bold rounded-2xl shadow-sm hover:bg-slate-50 transition-all">
+                                    <Icon name="mail" className="text-blue-600" />
+                                    <span>Email Support</span>
+                                </a>
+                                <button className="flex items-center justify-center gap-3 px-8 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">
+                                    <Icon name="phone" />
+                                    <span>(800) 322-8755</span>
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer className="max-w-7xl mx-auto px-6 py-20 border-t border-slate-200 text-center md:text-left">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-10">
+                            <div>
+                                <div className="flex items-center justify-center md:justify-start space-x-2 mb-3">
+                                    <Icon name="shield-check" className="text-blue-600" />
+                                    <span className="font-black text-slate-900 uppercase tracking-tighter">Infobase Learning</span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]">Partnering for Higher Ed Success</p>
+                            </div>
+                            <div className="flex flex-wrap justify-center gap-8 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                <a href="https://www.infobase.com" target="_blank" className="hover:text-blue-600 transition-colors">Official Site</a>
+                                <a href="https://libraries.flo.org/home" target="_blank" className="flex items-center hover:text-blue-600 transition-colors">
+                                    FLO Home <Icon name="arrow-up-right" className="ml-1.5" size={14} />
+                                </a>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
